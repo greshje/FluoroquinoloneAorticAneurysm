@@ -1,23 +1,24 @@
 # install the network package
-install.packages('remotes')
-remotes::install_github("OHDSI/Strategus", ref="results-upload")
+# install.packages('remotes')
+# remotes::install_github("OHDSI/Strategus", ref="results-upload")
 library(Strategus)
+library(checkmate)
 
 ##=========== START OF INPUTS ==========
 connectionDetailsReference <- "Jmdc"
-workDatabaseSchema <- 'scratch_asena5'
-cdmDatabaseSchema <- 'cdm_jmdc_v2325'
-outputLocation <- 'D:/git/anthonysena/FluoroquinaloneAorticAneurysm'
+workDatabaseSchema <- 'fluoroquinolone_scratch'
+cdmDatabaseSchema <- 'covid_ohdsi'
+outputLocation <- 'D:/FloroquinoloneOutput'
 minCellCount <- 5
 cohortTableName <- "sos_fq_aa"
 
-# the keyring entry should correspond to what you selected in KeyringSetup.R
-connectionDetails = DatabaseConnector::createConnectionDetails(
-  dbms = keyring::key_get("dbms", keyring = "sos-challenge"),
-  connectionString = keyring::key_get("connectionString", keyring = "sos-challenge"),
-  user = keyring::key_get("username", keyring = "sos-challenge"),
-  password = keyring::key_get("password", keyring = "sos-challenge")
-)
+# --- start test of connectionDetails -----------------------------------------------------------
+testConnection <- DatabaseConnector::connect(connectionDetails)
+testConnection 
+DatabaseConnector::querySql(testConnection, "show tables in demo_cdm")
+DatabaseConnector::disconnect(testConnection)
+# --- end test of connectionDetails -------------------------------------------------------------
+
 
 ##=========== END OF INPUTS ==========
 ##################################

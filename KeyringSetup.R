@@ -1,5 +1,58 @@
+# ---
+#
+# KeyringSetup.R
+# 
+# ---
+
 # Install keyring - one time operation ---------
-install.packages("keyring")
+# install.packages("keyring")
+
+# --- R Version ---------------------
+R.Version()
+# --- Java Version ------------------
+system("java -version")
+# -----------------------------------
+
+#
+# functions to get databricks token (user will be prompted for keyring password)
+#
+
+getToken <- function () {
+  return (
+    keyring::backend_file$new()$get(
+      service = "production",
+      user = "token",
+      keyring = "databricks_keyring"
+    )
+  )
+}
+
+#
+# functions to get databricks token (user will be prompted for keyring password)
+#
+
+getUrl <- function () {
+  url <- "jdbc:databricks://nachc-databricks.cloud.databricks.com:443/default;transportMode=http;ssl=1;httpPath=sql/protocolv1/o/3956472157536757/0123-223459-leafy532;AuthMech=3;UseNativeQuery=1;UID=token;PWD="
+  return (
+    paste(url, getToken(), sep = "")
+  )  
+}
+
+options(sqlRenderTempEmulationSchema = "fluoroquinolone_temp")
+
+connectionDetails <- DatabaseConnector::createConnectionDetails (
+  dbms = "spark",
+  connectionString = getUrl(),
+  pathToDriver="D:\\_YES_2023-05-28\\workspace\\SosExamples\\_COVID\\02-data-diagnostics\\drivers\\databricks\\"
+)
+
+# --- start test of connectionDetails -----------------------------------------------------------
+testConnection <- DatabaseConnector::connect(connectionDetails)
+testConnection 
+DatabaseConnector::querySql(testConnection, "show tables in demo_cdm")
+DatabaseConnector::disconnect(testConnection)
+# --- end test of connectionDetails -------------------------------------------------------------
+
 
 if (Sys.getenv("STRATEGUS_KEYRING_PASSWORD") == "") {
   # set keyring password by adding STRATEGUS_KEYRING_PASSWORD='sos' to renviron
@@ -11,11 +64,10 @@ if (Sys.getenv("STRATEGUS_KEYRING_PASSWORD") == "") {
 }
 
 # Provide your environment specific values ------
-dbms <- "redshift"
-connectionString <- "jdbc:redshift://your.server.goes.here:5439/your_cdm_database"
-username <- "username-goes-here"
-password = "password-goes-here"
-
+dbms <- "spark"
+connectionString <- "jdbc:databricks://nachc-databricks.cloud.databricks.com:443/default;transportMode=http;ssl=1;httpPath=sql/protocolv1/o/3956472157536757/0123-223459-leafy532;AuthMech=3;UseNativeQuery=1"
+username <- "token"
+password = getToken()
 
 
 # Run the rest to setup keyring ----------
@@ -56,3 +108,13 @@ keys <- c("dbms", "connectionString", "username", "password")
 for (i in seq_along(keys)) {
   message(paste0(" - ", keys[i], ": ", keyring::key_get(keys[i], keyring = keyringName)))
 }
+
+
+# --- start test of connectionDetails -----------------------------------------------------------
+testConnection <- DatabaseConnector::connect(connectionDetails)
+testConnection 
+DatabaseConnector::querySql(testConnection, "show tables in demo_cdm")
+DatabaseConnector::disconnect(testConnection)
+# --- end test of connectionDetails -------------------------------------------------------------
+
+
