@@ -5,6 +5,9 @@ library(Strategus)
 library(checkmate)
 
 ##=========== START OF INPUTS ==========
+
+source("KeyringSetup.R")
+
 connectionDetailsReference <- "Jmdc"
 workDatabaseSchema <- 'fluoroquinolone_scratch'
 cdmDatabaseSchema <- 'covid_ohdsi'
